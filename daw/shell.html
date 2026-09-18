@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NeonForge Studio — DAW hors ligne</title>
+<style>/*__CSS__*/</style>
+</head>
+<body>
+
+<!-- ============ SPLASH ============ -->
+<div id="splash">
+  <canvas id="splashCanvas"></canvas>
+  <div class="splash-inner">
+    <div class="logo" id="logo"></div>
+    <div class="tagline">Studio de production — 100% hors ligne</div>
+    <div class="author"><i></i><div><em>Créé par</em><br /><b>Otniel Zeitoun</b></div><i></i></div>
+
+    <div class="bootbar"><i id="bootbar"></i></div>
+    <div class="bootlog" id="bootlog"></div>
+    <button class="enter-btn" id="enterBtn">ENTRER DANS LE STUDIO</button>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <header>
+    <div class="brand">NEONFORGE</div>
+    <button class="tbtn play" id="btnPlay" title="Lecture (Espace)"><svg viewBox="0 0 16 16"><path d="M3 2l11 6-11 6z"/></svg></button>
+    <button class="tbtn" id="btnStop" title="Stop"><svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10"/></svg></button>
+    <button class="tbtn" id="btnMetro" title="Métronome"><svg viewBox="0 0 16 16"><path d="M6 1h4l3 14H3z"/></svg></button>
+    <div class="bpmbox">
+      <div>
+        <div class="lbl">Tempo</div>
+        <div class="bpmval" id="bpmVal">128</div>
+      </div>
+      <div class="lbl">BPM</div>
+    </div>
+    <div class="seg" id="modeSeg">
+      <button class="on" data-mode="pattern">PATTERN</button>
+      <button data-mode="song">SONG</button>
+    </div>
+    <input id="projName" class="act" style="min-width:170px" placeholder="Nom du projet" />
+    <div class="spacer"></div>
+    <button class="act" id="btnNew">NOUVEAU</button>
+    <button class="act" id="btnOpen">OUVRIR .KDAW</button>
+    <button class="act" id="btnSave">SAUVEGARDER</button>
+    <button class="act prime" id="btnExport">EXPORTER AUDIO</button>
+  </header>
+
+  <div class="stage">
+    <!-- ---- colonne gauche : synthé ---- -->
+    <div class="col scroll">
+      <div class="panel anim-up">
+        <div class="ph"><span class="dot"></span><h3>Synthé 3 oscillateurs</h3></div>
+        <div class="pb" id="synthBody"></div>
+      </div>
+      <div class="panel anim-up" style="animation-delay:.08s">
+        <div class="ph"><span class="dot"></span><h3>Filtre · Enveloppe · LFO</h3></div>
+        <div class="pb" id="filterBody"></div>
+      </div>
+      <div class="panel anim-up" style="animation-delay:.16s">
+        <div class="ph"><span class="dot"></span><h3>Effets</h3></div>
+        <div class="pb" id="fxBody"></div>
+      </div>
+    </div>
+
+    <!-- ---- colonne centrale ---- -->
+    <div class="col">
+      <div class="tabs" id="viewTabs">
+        <button class="on" data-view="seq">Séquenceur</button>
+        <button data-view="roll">Piano roll</button>
+      </div>
+
+      <div class="panel col anim-up" id="seqView" style="display:flex">
+        <div class="ph" style="flex-wrap:wrap">
+          <span class="dot"></span><h3>Patterns</h3>
+          <div class="patbar" id="patTabs"></div>
+          <div class="spacer"></div>
+          <button class="act" id="btnPatAdd" title="Nouveau pattern">+ PATTERN</button>
+          <button class="act" id="btnPatDup" title="Dupliquer le pattern">DUPLIQUER</button>
+          <button class="act" id="btnPatRen" title="Renommer">RENOMMER</button>
+          <button class="act" id="btnPatDel" title="Supprimer">SUPPRIMER</button>
+        </div>
+        <div class="ph">
+          <div class="seg" id="stepSeg">
+            <button class="on" data-steps="16">16</button>
+            <button data-steps="32">32</button>
+            <button data-steps="64">64</button>
+          </div>
+          <div class="seg" id="zoomSeg">
+            <button data-zoom="-1" title="Dézoomer">−</button>
+            <button data-zoom="1" title="Zoomer">+</button>
+          </div>
+          <span class="hint" id="tlInfo"></span>
+          <div class="spacer"></div>
+          <button class="act" id="btnClear">EFFACER</button>
+          <button class="act" id="btnRand">ALÉATOIRE</button>
+        </div>
+        <div class="grid-wrap" id="seqBody"></div>
+      </div>
+
+      <div class="panel col anim-up" id="rollView" style="display:none">
+        <div class="ph">
+          <span class="dot"></span><h3>Piano roll</h3>
+          <div class="spacer"></div>
+          <span class="hint">Clic = note · glisser le bord = durée · clic droit = supprimer · <kbd>A</kbd>…<kbd>;</kbd> = jouer</span>
+        </div>
+        <div id="rollWrap">
+          <div id="rollKeys"></div>
+          <div id="rollScroll"><div id="rollCanvas"><div id="rollPlayhead"></div></div></div>
+        </div>
+      </div>
+
+      <div class="panel anim-up" style="animation-delay:.12s">
+        <div class="ph"><span class="dot"></span><h3>Arrangement</h3><div class="spacer"></div><span class="hint">Clic = pattern suivant · clic droit = vider</span></div>
+        <div class="arr" id="arrBody"></div>
+      </div>
+    </div>
+
+    <!-- ---- colonne droite ---- -->
+    <div class="col scroll">
+      <div class="panel anim-up" style="animation-delay:.06s">
+        <div class="ph"><span class="dot"></span><h3>Batterie</h3></div>
+        <div class="pb" id="drumBody"></div>
+      </div>
+      <div class="panel anim-up" style="animation-delay:.12s">
+        <div class="ph"><span class="dot"></span><h3>Oscilloscope</h3></div>
+        <div class="pb">
+          <canvas class="viz" id="scope"></canvas>
+          <canvas class="viz" id="spectrum" style="margin-top:8px"></canvas>
+        </div>
+      </div>
+      <div class="panel anim-up" style="animation-delay:.18s">
+        <div class="ph"><span class="dot"></span><h3>Mixeur</h3></div>
+        <div class="pb" id="mixBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EXPORT ============ -->
+<div class="ov" id="expOverlay">
+  <div class="modal">
+    <div id="expIdle">
+      <h2>Exporter l'audio</h2>
+      <p class="sub">Rendu hors ligne, plus rapide que le temps réel.</p>
+      <div class="row"><label>Format</label>
+        <select id="expFormat" style="flex:1">
+          <option value="wav">WAV — qualité maximale</option>
+          <option value="mp3">MP3 — fichier léger</option>
+        </select>
+      </div>
+      <div class="row"><label>Boucles</label>
+        <select id="expLoops" style="flex:1">
+          <option value="1">1</option><option value="2">2</option>
+          <option value="4" selected>4</option><option value="8">8</option><option value="16">16</option>
+        </select>
+      </div>
+      <div class="row"><label>Fréquence</label>
+        <select id="expRate" style="flex:1">
+          <option value="44100" selected>44 100 Hz</option>
+          <option value="48000">48 000 Hz</option>
+        </select>
+      </div>
+      <div class="row" id="kbpsRow" style="display:none"><label>Débit MP3</label>
+        <select id="expKbps" style="flex:1">
+          <option value="128">128 kbps</option>
+          <option value="192" selected>192 kbps</option>
+          <option value="320">320 kbps</option>
+        </select>
+      </div>
+      <div class="row" style="margin:18px 0 0;justify-content:flex-end">
+        <button class="act" id="expClose">ANNULER</button>
+        <button class="act prime" id="expGo">LANCER LE RENDU</button>
+      </div>
+    </div>
+
+    <div id="expRun" style="display:none">
+      <h2>Rendu en cours</h2>
+      <p class="sub">Ne ferme pas la fenêtre.</p>
+      <canvas id="expCanvas"></canvas>
+      <div class="pbar"><i id="expBar"></i></div>
+      <div class="pstat" id="expStat"></div>
+    </div>
+
+    <div id="expDone" style="display:none;text-align:center">
+      <div class="done-check"><svg viewBox="0 0 36 36"><path d="M8 19l7 7 14-16"/></svg></div>
+      <h2 style="margin-top:16px">Export terminé</h2>
+      <p class="sub" id="expDoneTxt"></p>
+      <button class="act prime" id="expClose2">FERMER</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<script type="text/plain" id="lameSrc">/*__LAME__*/</script>
+<script type="application/json" id="sampleData">/*__SAMPLES__*/</script>
+<script>
+  window.__LAME_SOURCE__ = document.getElementById("lameSrc").textContent;
+  window.__SAMPLES__ = JSON.parse(document.getElementById("sampleData").textContent);
+</script>
+<script>/*__ENGINE__*/</script>
+<script>/*__APP__*/</script>
+</body>
+</html>
